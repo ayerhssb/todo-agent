@@ -1,118 +1,68 @@
 """
-Main entry point for the Gemini Agent Todo application.
-Day 2: Testing components
+Gemini Agent Todo - Day 3 Complete Application
+A conversational AI agent that manages todo lists using Google Gemini and LangChain.
 """
 
 import os
+import sys
+import argparse
 from dotenv import load_dotenv
+
 from src.todo.config import Config
-from src.todo.memory import MemoryManager
-from src.todo.tools import initialize_tools, ALL_TOOLS
-from src.todo.llm import create_gemini_llm
+from src.todo.cli import TodoCLI
 
 # Load environment variables
 load_dotenv()
 
-def test_memory_system():
-    """Test the memory management system."""
-    print("Testing Memory System...")
-    print("=" * 40)
-    
-    # Initialize memory
-    memory = MemoryManager()
-    
-    # Test todo operations
-    print(memory.add_todo("Learn LangChain"))
-    print(memory.add_todo("Build Gemini Agent"))
-    print(memory.list_todos())
-    
-    # Test conversation history
-    memory.add_conversation("Hello!", "Hi there! How can I help you?")
-    memory.set_user_name("Developer")
-    
-    # Get stats
-    stats = memory.get_stats()
-    print(f"\n Memory Stats:")
-    print(f"   User: {stats['user_name']}")
-    print(f"   Active todos: {stats['active_todos']}")
-    print(f"   Conversations: {stats['total_conversations']}")
-    
-    print("Memory system test complete!\n")
-
-def test_tools():
-    """Test the LangChain tools."""
-    print("Testing Tools...")
-    print("=" * 40)
-    
-    # Initialize tools
-    memory = initialize_tools()
-    
-    # Test each tool
-    print("Testing add_todo:")
-    print(ALL_TOOLS[0].run("Test task from tool"))
-    
-    print("\nTesting list_todos:")
-    print(ALL_TOOLS[1].run({}))
-    
-    print("\nTesting set_user_name:")
-    print(ALL_TOOLS[4].run("Alice"))
-    
-    print("\nTesting get_memory_stats:")
-    print(ALL_TOOLS[5].run({}))
-    
-    print("Tools test complete!\n")
-
-def test_llm():
-    """Test the Gemini LLM integration."""
-    print("Testing Gemini LLM...")
-    print("=" * 40)
-    
+def check_dependencies():
+    """Check if all required dependencies are available."""
     try:
-        # Validate config first
-        Config.validate()
-        print("Configuration validated")
-        
-        # Create LLM
-        llm = create_gemini_llm()
-        print("Gemini LLM created")
-        
-        # Test simple prompt
-        response = llm("Say hello and introduce yourself as a helpful assistant.")
-        print(f"LLM Response: {response}")
-        
-        print("LLM test complete!\n")
-        
-    except Exception as e:
-        print(f"LLM test failed: {e}")
-        print("Make sure your GEMINI_API_KEY is set in .env file\n")
+        import google.generativeai
+        import langchain
+        import colorama
+        print("✓ All dependencies are installed")
+        return True
+    except ImportError as e:
+        print(f"❌ Missing dependency: {e}")
+        print("Please install dependencies with: uv add langchain langgraph google-generativeai colorama")
+        return False
 
 def main():
-    """Main function to run Day 2 tests."""
-    print("Gemini Agent Todo - Day 2 Testing")
-    print("=" * 50)
+    """Main application entry point."""
+    parser = argparse.ArgumentParser(description="Gemini Todo Agent - AI-powered todo management")
+    parser.add_argument("--data-dir", default="data", help="Directory for storing data files")
+    parser.add_argument("--test", action="store_true", help="Run component tests")
+    parser.add_argument("--version", action="version", version="Gemini Todo Agent 1.0.0")
     
-    # Check if API key is loaded
-    api_key = os.getenv('GEMINI_API_KEY')
-    if api_key:
-        print("Gemini API Key loaded")
-    else:
-        print("Gemini API Key not found. Please check your .env file")
-        return
+    args = parser.parse_args()
     
-    print(f"Using UV for dependency management")
-    print(f"Python version: {os.sys.version}\n")
+    # Check dependencies
+    if not check_dependencies():
+        return 1
     
-    # Run tests
-    test_memory_system()
-    test_tools()
-    test_llm()
+    # Run tests if requested
+    if args.test:
+        from src.todo.test_components import run_all_tests
+        return run_all_tests()
     
-    print("Day 2 Component Tests Complete!")
-    print("\nNext steps for Day 3:")
-    print("1. Create the LangChain Agent")
-    print("2. Add conversation loop")
-    print("3. Polish the user experience")
-    print("4. Create comprehensive README")
+    # Check API key
+    if not os.getenv('GEMINI_API_KEY'):
+        print("❌ GEMINI_API_KEY not found in environment variables")
+        print("Please create a .env file with your API key:")
+        print("GEMINI_API_KEY=your_api_key_here")
+        return 1
+    
+    # Run the CLI application
+    try:
+        cli = TodoCLI(data_dir=args.data_dir)
+        cli.run()
+        return 0
+    except KeyboardInterrupt:
+        print("\n👋 Goodbye!")
+        return 0
+    except Exception as e:
+        print(f"❌ Application error: {e}")
+        return 1
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

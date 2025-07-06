@@ -12,4 +12,5 @@ dependencies = [
     "google-generativeai>=0.3.2",
     "python-dotenv>=1.0.0",
     "pydantic>=2.5.0",
+    "colorama>=0.4.6",
 ]

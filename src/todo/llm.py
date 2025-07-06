@@ -12,7 +12,7 @@ class GeminiLLM(LLM):
     """Custom LangChain LLM wrapper for Google Gemini."""
     
     model_name: str = "gemini-1.5-flash"
-    temperature: float = 0.7
+    temperature: float = 0.1  # Lower temperature for more consistent tool use
     max_tokens: int = 1000
     genai_model: Any = None
     
@@ -35,11 +35,12 @@ class GeminiLLM(LLM):
     ) -> str:
         """Call the Gemini API."""
         try:
-            # Configure generation parameters
+            # Configure generation parameters for better consistency
             generation_config = genai.types.GenerationConfig(
                 temperature=self.temperature,
                 max_output_tokens=self.max_tokens,
                 candidate_count=1,
+                stop_sequences=stop if stop else None,
             )
             
             # Generate response
@@ -73,7 +74,7 @@ class GeminiLLM(LLM):
             "max_tokens": self.max_tokens,
         }
 
-def create_gemini_llm(temperature: float = 0.7, max_tokens: int = 1000) -> GeminiLLM:
+def create_gemini_llm(temperature: float = 0.1, max_tokens: int = 1000) -> GeminiLLM:
     """Create and return a configured Gemini LLM instance."""
     return GeminiLLM(
         model_name="gemini-1.5-flash",

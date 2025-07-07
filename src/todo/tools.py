@@ -47,13 +47,13 @@ def list_todos() -> str:
 @tool
 def remove_todo(task: str) -> str:
     """
-    Remove a task from the user's to-do list.
+    Remove a task from the user's to-do list. Can remove single tasks or all tasks.
     
     Args:
-        task: The exact task description to remove from the to-do list
+        task: The task description to remove, or "all" to remove all tasks
         
     Returns:
-        Confirmation message about the task being removed
+        Confirmation message about the task(s) being removed
     """
     if not memory_manager:
         return "Memory system not initialized. Please contact support."

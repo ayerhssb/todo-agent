@@ -79,6 +79,12 @@ class MemoryManager:
     
     def add_todo(self, task: str) -> str:
         """Add a todo item."""
+        
+        # Check for duplicates
+        existing_tasks = [todo['task'].lower() for todo in self.memory["todos"] if not todo["completed"]]
+        if task.lower() in existing_tasks:
+            return f"'{task}' is already in your to-do list."
+        
         todo_item = {
             "id": len(self.memory["todos"]) + 1,
             "task": task,
@@ -103,13 +109,28 @@ class MemoryManager:
     
     def remove_todo(self, task: str) -> str:
         """Remove a todo item by task name."""
+        # Handle "all" case
+        if task.lower() in ["all", "everything", "all todos", "all tasks"]:
+            active_todos = [todo for todo in self.memory["todos"] if not todo["completed"]]
+            if not active_todos:
+                return "Your to-do list is already empty."
+            
+            count = len(active_todos)
+            for todo in self.memory["todos"]:
+                if not todo["completed"]:
+                    todo["completed"] = True
+            
+            self.save_memory()
+            return f"Removed all {count} tasks from your to-do list."
+        
+        # Handle single task removal
         for todo in self.memory["todos"]:
             if todo["task"].lower() == task.lower() and not todo["completed"]:
-                todo["completed"] = True  # Mark as completed instead of deleting
+                todo["completed"] = True
                 self.save_memory()
                 return f"Removed '{task}' from your to-do list."
         
-        return f"❌ Task '{task}' not found in your to-do list."
+        return f"Task '{task}' not found in your to-do list."
     
     def get_context_for_llm(self) -> str:
         """Get context string for LLM including user name and recent history."""

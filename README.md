@@ -99,9 +99,9 @@ def remove_todo(task: str) -> str:
 
 ## Screenshots
 
-![App Screenshot](screenshots\ss2.png)
+![App Screenshot](./screenshots/ss2.png)
 
-![App Screenshot](screenshots\ss1.png)
+![App Screenshot](./screenshots/ss1.png)
 
 ## 🚀 Setup Instructions
 

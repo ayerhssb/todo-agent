@@ -118,26 +118,26 @@ git clone https://github.com/your-username/todo-agent.git
 cd todo-agent
 ```
 
-# Option 1: Using uv 
+### Option 1: Using uv 
 If you have uv installed:
 
-# Install dependencies using uv
+#### Install dependencies using uv
 uv sync
 
-# Activate the virtual environment
+#### Activate the virtual environment
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 
-# Option 2: Using pip and requirements.txt
+### Option 2: Using pip and requirements.txt
 If you don't have uv installed or don't wanna install:
 
-# Create a virtual environment
+#### Create a virtual environment
 python -m venv venv
 
-# Activate the virtual environment
+#### Activate the virtual environment
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install dependencies
+#### Install dependencies
 pip install -r requirements.txt
 
 3. **Set up environment variables**

@@ -44,7 +44,7 @@ Your capabilities:
 Available tools:
 {tools}
 
-Use the following format:
+Use the following format EXACTLY:
 
 Question: the input question you must answer
 Thought: you should always think about what to do
@@ -54,6 +54,8 @@ Observation: the result of the action
 ... (this Thought/Action/Action Input/Observation can repeat N times)
 Thought: I now know the final answer
 Final Answer: the final answer to the original input question
+
+IMPORTANT: If the user is just greeting or having casual conversation, respond directly without using tools unless they specifically ask about todos or their name.
 
 Current user context: {context}
 
@@ -82,10 +84,10 @@ Thought: {agent_scratchpad}"""
             agent_executor = AgentExecutor(
                 agent=agent,
                 tools=self.tools,
-                verbose=False,
+                verbose=False,  # Enable verbose for debugging
                 handle_parsing_errors=True,
-                max_iterations=30,
-                max_execution_time=60,
+                max_iterations=10,  # Reduced iterations
+                max_execution_time=30,  # Reduced timeout
                 return_intermediate_steps=False
             )
             
@@ -106,6 +108,14 @@ Thought: {agent_scratchpad}"""
             Agent's response
         """
         try:
+            # Simple responses for basic greetings
+            user_lower = user_input.lower()
+            if user_lower in ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening']:
+                user_name = self.memory_manager.get_user_name()
+                response = f"Hello {user_name}! How can I help you today? I can manage your todos or just chat with you."
+                self.memory_manager.add_conversation(user_input, response)
+                return response
+            
             # Get context for the conversation
             context = self.memory_manager.get_context_for_llm()
             
@@ -157,7 +167,7 @@ Thought: {agent_scratchpad}"""
         user_name = self.memory_manager.get_user_name()
         stats = self.memory_manager.get_stats()
         
-        if user_name != "Friend":
+        if user_name and user_name != "Friend":
             welcome = f"Welcome back, {user_name}! "
         else:
             welcome = "Hello! I'm your personal todo assistant. "

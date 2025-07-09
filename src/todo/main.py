@@ -1,7 +1,3 @@
-"""
-Gemini Agent Todo - Day 3 Complete Application
-A conversational AI agent that manages todo lists using Google Gemini and LangChain.
-"""
 
 import os
 import sys

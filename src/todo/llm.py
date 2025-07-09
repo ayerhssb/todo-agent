@@ -12,7 +12,7 @@ class GeminiLLM(LLM):
     """Custom LangChain LLM wrapper for Google Gemini."""
     
     model_name: str = "gemini-1.5-flash"
-    temperature: float = 0.1  # Lower temperature for more consistent tool use
+    temperature: float = 0.3  # Balanced temperature
     max_tokens: int = 1000
     genai_model: Any = None
     
@@ -35,7 +35,7 @@ class GeminiLLM(LLM):
     ) -> str:
         """Call the Gemini API."""
         try:
-            # Configure generation parameters for better consistency
+            # Configure generation parameters
             generation_config = genai.types.GenerationConfig(
                 temperature=self.temperature,
                 max_output_tokens=self.max_tokens,
@@ -43,27 +43,29 @@ class GeminiLLM(LLM):
                 stop_sequences=stop if stop else None,
             )
             
-            # Generate response
+            # Generate response with timeout
             response = self.genai_model.generate_content(
                 prompt,
                 generation_config=generation_config,
                 safety_settings={
-                    genai.types.HarmCategory.HARM_CATEGORY_HARASSMENT: genai.types.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-                    genai.types.HarmCategory.HARM_CATEGORY_HATE_SPEECH: genai.types.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-                    genai.types.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: genai.types.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-                    genai.types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: genai.types.HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                    genai.types.HarmCategory.HARM_CATEGORY_HARASSMENT: genai.types.HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                    genai.types.HarmCategory.HARM_CATEGORY_HATE_SPEECH: genai.types.HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                    genai.types.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: genai.types.HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                    genai.types.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: genai.types.HarmBlockThreshold.BLOCK_ONLY_HIGH,
                 }
             )
             
-            # Extract text from response
+            # Extract and return text
             if response.text:
                 return response.text.strip()
+            elif response.candidates and response.candidates[0].content.parts:
+                return response.candidates[0].content.parts[0].text.strip()
             else:
                 return "I apologize, but I couldn't generate a response. Please try again."
                 
         except Exception as e:
             print(f"Error calling Gemini API: {e}")
-            return f"Sorry, I encountered an error: {str(e)}"
+            return f"I encountered an error: {str(e)}. Please try again."
     
     @property
     def _identifying_params(self) -> dict:
@@ -74,7 +76,7 @@ class GeminiLLM(LLM):
             "max_tokens": self.max_tokens,
         }
 
-def create_gemini_llm(temperature: float = 0.1, max_tokens: int = 1000) -> GeminiLLM:
+def create_gemini_llm(temperature: float = 0.3, max_tokens: int = 1000) -> GeminiLLM:
     """Create and return a configured Gemini LLM instance."""
     return GeminiLLM(
         model_name="gemini-1.5-flash",
